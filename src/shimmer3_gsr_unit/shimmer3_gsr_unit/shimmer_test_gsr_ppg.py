@@ -1,4 +1,5 @@
-#!/usr/bin/env python3 ROS1
+# ROS1
+#!/usr/bin/env python3
 
 import sys, struct, serial, os  # pip3 install pyserial
 # import rclpy
