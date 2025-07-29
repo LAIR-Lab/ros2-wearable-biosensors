@@ -10,8 +10,6 @@ Wearable biosensors enable continuous human data capture, facilitating the devel
 
 # Requirements
 * ROS2 foxy
-* Install [Emotiv App](https://www.emotiv.com/my-account/downloads/)
-* Install [Emaptica E4 streaming server](https://developer.empatica.com/windows-streaming-server-usage.html) on an additional Window machine (Win10)
 * Install python libraries:
 ```bash
 $ pip3 install open-e4-client pexpect websocket-client
@@ -19,12 +17,12 @@ $ pip3 install open-e4-client pexpect websocket-client
 
 # Installation
 ```bash
-$ cd ~
-$ source /opt/ros/foxy/setup.bash
-$ git clone https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git
-$ cd ros2-foxy-wearable-biosensors
-$ colcon build --symlink-install
-$ source install/setup.bash
+cd ~
+source /opt/ros/foxy/setup.bash
+git clone https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git
+cd ros2-foxy-wearable-biosensors
+colcon build --symlink-install
+source install/setup.bash
 ```
 
 # Supported Wearable Biosensors 
