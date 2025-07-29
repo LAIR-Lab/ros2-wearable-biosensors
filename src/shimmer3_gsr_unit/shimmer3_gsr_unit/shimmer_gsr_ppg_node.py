@@ -26,7 +26,7 @@ class ros2_shimmer3(Node):
         # For the Veriner Respriation Belt H10 device.
         # Ensure the Bluetooth radio is available by running the '''$ hciconfig''' command.
         # Scan for the Shimmer by running the '''$ hcitool scan''' command.
-        self.declare_parameter('Device_Name', "00:06:66:F2:AF:E9") # Should be changed inro your device name
+        self.declare_parameter('Device_Name', "74:D5:C6:52:65:C2") # Should be changed inro your device name
         self.Parm_Device_Name = self.get_parameter('Device_Name').value 
         
         
