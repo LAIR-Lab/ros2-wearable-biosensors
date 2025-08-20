@@ -42,7 +42,7 @@ source install/setup.bash
 cd
 source ~/venv/bin/activate # If using a virtual environment, activate it here
 cd ~/ros2_ws # Direct to ROS2 workspace directory
-ros2 launch shimmer3_gsr ros2-shimmer3_gsr.launch.py 
+ros2 launch shimmer3_gsr_unit ros2-shimmer3_gsr.launch.py 
 ```
 ============================================================================================
 
