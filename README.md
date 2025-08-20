@@ -31,12 +31,20 @@ source install/setup.bash
 
 1) [Empatica E4 wristband](ros2-foxy-wearable-biosensors/empatica_e4)
 2) [Emotiv Insight](/ros2-foxy-wearable-biosensors/emotiv_insight)
-3) [Shimmer3-GSR Unit+](/ros2-foxy-wearable-biosensors/shimmer3_gsr)
+3) [Shimmer3-GSR Unit+](/ros2-foxy-wearable-biosensors/shimmer3_gsr) **(LAIR Lab only uses this one)**
 4) [Polar H10](/ros2-foxy-wearable-biosensors/polar_h10)
 5) [Vernier Respiration Belt](/ros2-foxy-wearable-biosensors/vernier_respiration_belt)
 6) [Zephyr Bioharness](/ros2-foxy-wearable-biosensors/zephyr-ros-master)
 7) TBD (will be added new sensors on v0.0.2)
 
+**# Running**
+```
+cd
+source ~/venv/bin/activate # If using a virtual environment, activate it here
+cd ~/ros2_ws # Direct to ROS2 workspace directory
+ros2 launch shimmer3_gsr ros2-shimmer3_gsr.launch.py 
+```
+============================================================================================
 
 ## Contributors
 Wonse Jo, Jaeeun Kim, and Dr. Byung-Cheol Min are with [SMART Lab](http://www.smart-laboratory.org/index.html), Department of Computer and Information Technology, [Purdue University](https://www.purdue.edu/), West Lafayette, IN 47907, USA.<br />
