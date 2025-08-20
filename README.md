@@ -37,7 +37,7 @@ source install/setup.bash
 6) [Zephyr Bioharness](/ros2-foxy-wearable-biosensors/zephyr-ros-master)
 7) TBD (will be added new sensors on v0.0.2)
 
-**# Running**
+**# Usage**
 ```
 cd
 source ~/venv/bin/activate # If using a virtual environment, activate it here
