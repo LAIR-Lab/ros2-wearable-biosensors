@@ -1,4 +1,8 @@
 # ros2-foxy-wearable-biosensors
+
+*Future Improvements*
+- Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
+
 <p align="center">
 <img src="/media/img/ros2_biosensor_pkg.png" width="700" >
 </p>
@@ -38,12 +42,39 @@ source install/setup.bash
 7) TBD (will be added new sensors on v0.0.2)
 
 **# Usage**
+*Build and Run Container*
 ```
 cd
-cd shimmer3-docker
-sudo docker build -t ros2_ws:jazzy.
-sudo docker run -it --user root -v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy.bash
-ros2 launch shimmer3_pkg shimmer3-ros2.launch.py
+cd shimmer3-docker # direct to dir in home 
+sudo docker build -t ros2_ws:jazzy . # build and name container
+
+# If still using BlueZ rfcomm
+sudo docker run -it --device /dev/rfkill --device /dev/ttyUSB0 -v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy bash
+
+# If not using BlueZ rfcomm (e.g., bluetoothctl)
+sudo docker run -it --user root -v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy bash # run container running in background (-d: detached)
+
+# If you want to detach the container from the terminal, add -d to the docker run command, then enter the last container
+CONTAINER_ID=$(sudo docker ps --format "{{.ID}}" | head -n 1) # capture and name variable
+sudo docker exec -it $CONTAINER_ID bash # exec bash open the container from its id
+
+```
+*Source Container*
+```
+source /opt/venv/bin/activate # source virtual environment
+source /opt/ros/jazzy/setup.bash # source ROS2
+source /ros2_ws/install/setup.bash # source workspace
+export PS1="\[\e[38;2;13;183;237m\][CONTAINER \u@\h \w]\$ \[\e[0m\]" # recolor the container prompt to Docker blue for convenience
+```
+*Launch Package*
+```
+ros2 launch shimmer3_pkg shimmer3-ros2.launch.py # launch file
+```
+*To stop and remove*
+```
+deactivate # venv
+sudo docker stop $(sudo docker ps -q)
+sudo docker rm $(sudo docker ps -a -q)
 ```
 ============================================================================================
 
