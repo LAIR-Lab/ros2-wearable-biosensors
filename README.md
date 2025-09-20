@@ -43,6 +43,12 @@ source install/setup.bash
 
 **# Usage**
 
+*Determine RFCOMM channel*
+```
+bluetoothctl
+sdptool browse <MAC-ADDRESS>
+```
+
 *Build and Run Container*
 ```
 cd
