@@ -42,6 +42,7 @@ source install/setup.bash
 7) TBD (will be added new sensors on v0.0.2)
 
 **# Usage**
+
 *Build and Run Container*
 ```
 cd
@@ -49,7 +50,11 @@ cd shimmer3-docker # direct to dir in home
 sudo docker build -t ros2_ws:jazzy . # build and name container
 
 # If still using BlueZ rfcomm
-sudo docker run -it --device /dev/rfkill --device /dev/ttyUSB0 -v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy bash
+sudo docker run -it \
+--device /dev/rfkill \
+--device /dev/ttyUSB0 \
+--device /dev/rfcomm0 \
+-v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy bash
 
 # If not using BlueZ rfcomm (e.g., bluetoothctl)
 sudo docker run -it --user root -v $(pwd)/src:/ros2_ws/src ros2_ws:jazzy bash # run container running in background (-d: detached)
