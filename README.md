@@ -61,6 +61,7 @@ source install/setup.bash
 **# Usage**
 
 *Determine RFCOMM channel*
+
 In our case, it is `6`
 ```
 bluetoothctl
@@ -68,12 +69,14 @@ sdptool browse <MAC-ADDRESS>
 ```
 
 *Establish Bluetooth Connection, and build and run Docker Container*
+
 The Dcont is built including `-v $(pwd)/src:/shimmer3/src \`, mounting the `src` folder on the host's computer to the Dcont's running `src` folder, so any edits made to files in that folder (packages) will be reflected and updated.
 ```
 python3 start.py
 ```
 
 *Virtual Environment, Build and Source etc.* 
+
 Copy paste this into the bash after running `python3 start.py`.
 (There is probably a better and simple way to incorporate this into the Dockerfile, but I was not able to work it out successfully:'))
 ```
@@ -86,6 +89,7 @@ export PS1="\[\e[38;2;13;183;237m\][CONTAINER \u@\h \w]\$ \[\e[0m\]" # recolor t
 ```
 
 *Launch Package*
+
 The above commands do not launch the shimmer3 package. You can do this manually from within the container.
 Launch Parameters:
 ```
