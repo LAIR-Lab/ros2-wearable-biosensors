@@ -4,9 +4,15 @@
 - Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
 - Better source the Docker environment, incorporating commands into the DockerFile instead of copy-pasting into each new terminal.
 - Get `matplooter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
+- Appears to be a non fatal error `[shimmer3_node-1] Can't open RFCOMM control socket: Address family not supported by protocol`
 
 # Troubleshooting
-- The device node `/dev/rfcomm0` will not be detected if `shimmer3_node` is running. Attempting to run `start.py` in another terminal will end the ongoing process, but not stop the node from spinning.  
+- The device node `/dev/rfcomm0` will not be detected if `shimmer3_node` is running. Attempting to run `start.py` in another terminal will end the ongoing process, but not stop the node from spinning.
+- If `start.py` does not connect to Bluetooth device, try opening a second terminal and running
+    ```
+    bluetoothctl
+    scan on
+    ``` 
 
 # Basic Code Structure
 `start.py`
