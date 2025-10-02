@@ -1,4 +1,4 @@
-# ros2-foxy-wearable-biosensors
+# ROS2 Shimmer3 PPG HR 
 
 *Future Improvements*
 - Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
