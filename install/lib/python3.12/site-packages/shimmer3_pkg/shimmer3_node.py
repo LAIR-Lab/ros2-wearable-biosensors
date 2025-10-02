@@ -8,8 +8,6 @@ import numpy as np
 import subprocess
 from std_msgs.msg import Float32, Float32MultiArray, Int32
 import time
-syst = os.system
-sys.stdout.flush()
 
 class ros2_shimmer3(Node):
     def __init__(self):
@@ -18,41 +16,30 @@ class ros2_shimmer3(Node):
         self.declare_parameter('Sensor_Enable', True) # Enable to publish sensor data (true)
         self.declare_parameter('Chunk_Enable', True) # Enable to publish chunk data (true)        
         self.declare_parameter('Chunk_Length', 128) # Define the length of the chunk data
-        self.declare_parameter('MAC_Addr', "74:D5:C6:52:65:C2") # Should be changed into your device name
+        self.declare_parameter('Device_Name', "74:D5:C6:52:65:C2") # Should be changed into your device name
         self.declare_parameter('Channel_Number', "6")
-        self.declare_parameter('Device_Name', "/dev/rfcomm0")
         
         self.Parm_Sensor_Enable = self.get_parameter('Sensor_Enable').value 
         self.Parm_Chunk_Enable = self.get_parameter('Chunk_Enable').value 
         self.Parm_Chunk_Length = self.get_parameter('Chunk_Length').value 
-        self.Parm_MAC_Addr = self.get_parameter('MAC_Addr').value 
+        self.Parm_Device_Name = self.get_parameter('Device_Name').value 
         self.Parm_Channel_Number = self.get_parameter('Channel_Number').value
-        self.Parm_Device_Name = self.get_parameter('Device_Name').value
 
         # Ensure the Bluetooth radio is available by running the '''$ hciconfig''' command.
         # Scan for the Shimmer by running the '''$ hcitool scan''' command.
 
         # Connect to Device via Bluetooth
-        bt_addr = self.Parm_MAC_Addr
-        print(f"bt_addr: {bt_addr}")
-        print(f"Device_Name: {self.Parm_Device_Name}")
+        bt_addr = self.Parm_Device_Name
         try:
             WAIT_SEC = 2
             while True:
                 try:
-                    print("releasing")
-                    syst("sudo rfcomm release 0") # release rfcomm0
-                    print("released")
-                    syst(f"sudo rfcomm bind 0 {bt_addr} {str(self.Parm_Channel_Number)}")
-                    print("binded")
-                    syst(f"sudo chmod a+rw {self.Parm_Device_Name}") # (ch)ange (mod)e and let (a)ll users (r)ead or (w)rite to device  
-                    print("chmoded")
-                    self.ser = serial.Serial(self.Parm_Device_Name, 115200, timeout=1) # open port
+                    self.ser = serial.Serial("/dev/rfcomm0", 115200, timeout=1) # open port
                     self.ser.write(b'\x07') # trigger data stream
                     time.sleep(WAIT_SEC)
                     data = self.ser.read(100) # read arbitrary 100B of data
                     if data: 
-                        print(f"{bt_addr} connection successful on channel {self.Parm_Channel_Number} and rfcomm port device {self.Parm_MAC_Addr} in container <CONTAINER_NAME>!")
+                        print(f"{bt_addr} connection successful on channel {self.Parm_Channel_Number} and rfcomm port device {self.Parm_Device_Name} in container <CONTAINER_NAME>!")
                         break # if the read data exists, success!
                 except subprocess.CalledProcessError as e:
                     print(f"Command failed: {e}")

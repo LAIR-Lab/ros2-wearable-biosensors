@@ -24,7 +24,7 @@ class MatPlotterNode(Node):
         # Attributes
         self.sample_rate = 50.032613 # in Hz
         self.upperlimit = 180.0  # upper limit for heart rate in BPM
-        self.maxlen = 500
+        self.maxlen = 150
         self.buffer = deque(maxlen=self.maxlen)
         self.window_size = 10.0 # in s
 
@@ -36,7 +36,7 @@ class MatPlotterNode(Node):
         self.ax.set_xlabel('Time [s]')
         self.ax.set_ylabel('BPM')
         self.ax.legend()
-        self.get_logger().info("Showing plot...")
+        print("Showing plot...")
         plt.show() # actually show the window
 
     def plot_callback(self, msg):

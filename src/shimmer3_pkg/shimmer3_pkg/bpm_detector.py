@@ -7,14 +7,22 @@ import numpy as np
 
 # Attributes
 SAMPLERATE = 50.032613 # This is determined from this Shimmer3 beforehand using hp.get_samplerate_mstimer(mstimer_data)
-PPG_BUFFER_LENGTH = 150 # make alaunch parameter. shorter the better to avoid excessive filtering.
+ppg_buffer_length = 150 # make alaunch parameter. shorter the better to avoid excessive filtering.
 UPPERLIMIT = 180  # Maximum plausible heart rate
-HRV_LIMIT = 10    # Maximum plausible change in heart rate between successive beats
 
 class BPMDetectorNode(Node):
     def __init__(self):
         super().__init__('bpm_detector_node')
-        # Subscriptions
+        # Parameters
+        self.declare_parameter('ppg_buffer_length', 10)
+        self.declare_parameter('hrv_limit', 1)
+
+        self.ppg_buffer_length = int(self.get_parameter('ppg_buffer_length').value)
+        self.hrv_limit = int(self.get_parameter('hrv_limit').value)
+
+        self.last_bpm = 0.0
+
+        # Subscriptions``
         self.subscription = self.create_subscription(
             Float32,
             'biosensors/shimmer3_gsr/ppg',
@@ -37,14 +45,14 @@ class BPMDetectorNode(Node):
 
     def ppg_callback(self, msg):
         self.ppg_buffer.append(msg.data)
-        if len(self.ppg_buffer) >= PPG_BUFFER_LENGTH: self.compute_and_publish_bpm() # wait until enough samples are collected
+        if len(self.ppg_buffer) >= self.ppg_buffer_length: self.compute_and_publish_bpm() # wait until enough samples are collected
 
     def compute_and_publish_bpm(self):
         ppg_data = np.array(self.ppg_buffer, dtype=float)
         try:
             wd, m = hp.process(ppg_data, SAMPLERATE) # wd: working data, m: measures
-            wd['peaklist_t'] = [int(idx) / SAMPLERATE for idx in wd['peaklist']]
-            bpm_list = get_hr(wd['peaklist_t'])
+            wd['peaklist_t'] = [idx / SAMPLERATE for idx in wd['peaklist']]
+            bpm_list = self.get_hr(wd['peaklist_t'])
             bpm = bpm_list[-1] if bpm_list else 0.0
             self.publisher_single.publish(Float32(data=float(bpm)))
             self.bpm_buffer.append(bpm)
@@ -57,32 +65,43 @@ class BPMDetectorNode(Node):
         except Exception as e:
             self.get_logger().warning(f'BPM computation failed: {e}')
 
-def get_hr(peaklist, printout=True):
-    bpm = []
-    rr_dist = [peaklist[idx] - peaklist[idx-1] for idx in range(1, len(peaklist))] # in samples
-    rr_time = [rd / SAMPLERATE for rd in rr_dist]  # in seconds
-    for i, rd in enumerate(rr_time):
-        bpm.append(1.0 / rd)
-        if len(bpm) > 1: # no-difference check for first element
-            bpm_diff = bpm[-1] - bpm[-2] 
-            if abs(bpm_diff) > HRV_LIMIT: # limit exceeded (indicates unrealistic spike)
-                print(f"bpm_diff: {bpm_diff}")
-                bpm.pop()
-                bpm.append(bpm[-1] + sign(bpm_diff) * HRV_LIMIT) # limit the change to the limit value
-        if bpm[-1] > UPPERLIMIT:
-            bpm.pop()
-            if len(bpm) == 0:
-                print(f"bpm is empty, appending 0.0")
-                bpm.append(0.0)
-            else: bpm.append(bpm[-1]) # ignore the change and repeat the last value
+    def get_hr(self, peaklist):
+        rr_dist = [peaklist[idx] - peaklist[idx-1] for idx in range(1, len(peaklist))] # in samples
+        rr_time = [rd / SAMPLERATE for rd in rr_dist]  # in seconds
+        bpm_list = []
+        for rd in rr_time:
+            candidate = (1.0 / rd)
+            bpm_diff =candidate - self.last_bpm
+            if self.last_bpm != 0 and abs(bpm_diff) > self.hrv_limit:
+                self.get_logger().info(f"bpm_diff: {bpm_diff}")
+                candidate = self.last_bpm + self.sign(bpm_diff) * self.hrv_limit
+            if candidate > UPPERLIMIT: 
+                self.get_logger().info(f"bpm value of '{candidate}' exceeds {UPPERLIMIT}")
+                candidate = self.last_bpm
+            
+            self.last_bpm = candidate
+            bpm_list.append(candidate)
+        return bpm_list
+            
+            # if len(bpm) > 1: # no-difference check for first element
+                # bpm_diff = bpm[-1] - bpm[-2] 
+                # if abs(bpm_diff) > self.hrv_limit: # limit exceeded (indicates unrealistic spike)
+                    # self.get_logger().info(f"bpm_diff: {bpm_diff}")
+                    # bpm.pop()
+                    # bpm.append(bpm[-1]) # limit the change to the limit value
+            # if bpm[-1] > UPPERLIMIT:
+                # bpm.pop()
+                # if len(bpm) == 0:
+                    # self.get_logger().info(f"bpm is empty, appending 0.0")
+                    # bpm.append(0.0)
+                # else: 
+                    # self.get_logger().info(f"bpm value exceeds {UPPERLIMIT}")
+                    # bpm.append(bpm[-1]) # ignore the change and repeat the last value
+        # return bpm
 
-    if printout:
-        print(f"bpm: {bpm}")
-    return bpm
-
-def sign(x):
-    x = float(x)
-    return (x > 0) - (x < 0)
+    def sign(self, x):
+        x = float(x)
+        return (x > 0) - (x < 0)
 
 def main(args=None):
     rclpy.init(args=args)
