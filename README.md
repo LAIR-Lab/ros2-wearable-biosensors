@@ -36,7 +36,7 @@ source /opt/ros/humble/setup.bash
 git clone https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git
 ```
 
-**# Usage**
+# Usage
 
 *Determine RFCOMM channel*
 
