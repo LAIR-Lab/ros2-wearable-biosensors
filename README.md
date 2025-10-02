@@ -1,7 +1,12 @@
 # ROS2 Shimmer3 PPG HR 
 
-*Future Improvements*
+# Future Improvements
 - Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
+- Better source the Docker environment, incorporating commands into the DockerFile instead of copy-pasting into each new terminal.
+- Get `matplooter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
+
+# Troubleshooting
+- The device node `/dev/rfcomm0` will not be detected if `shimmer3_node` is running. Attempting to run `start.py` in another terminal will end the ongoing process, but not stop the node from spinning.  
 
 # Basic Code Structure
 `start.py`
@@ -21,22 +26,25 @@
       - Publishes heartrate as a single `live_bpm` and rolling buffer `bpm_buffer` for plotting. 
   -  `matplotter_node`
       - Subscribes to `bpm_detector_node`'s `bpm_buffer` and outputs a window
-      - Can be toggle via launch parameter, on by default. 
+      - Can be toggled via launch parameter, on by default. 
 
 # Requirements
-* Install python libraries:
-```bash
-$ pip3 install open-e4-client pexpect websocket-client
-```
+- Bluetooth capability (dongle?)
+- Install python libraries:
+  ```bash
+  $ pip3 install open-e4-client pexpect websocket-client
+  ```
 
 # Installation
 ```bash
-cd ~
-source /opt/ros/humble/setup.bash
-git clone https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git
+cd 
+git clone --branch main https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git shimmer3
 ```
 
 # Usage
+
+The first time connecting Shimmer3 device to your computer, you will need to enter the device's pairing code, which is, according to the Shimmer User Manual, by default, `1234`. <br>
+This will cause the device to temporarily connect to your computer via Bluetooth then disconnect, signalling it is ready to run.
 
 *Determine RFCOMM channel*
 
@@ -55,7 +63,7 @@ python3 start.py
 
 *Virtual Environment, Build and Source etc.* 
 
-Copy paste this into the bash after running `python3 start.py`.
+Copy paste this into the bash after running `python3 start.py`. <br>
 (There is probably a better and simple way to incorporate this into the Dockerfile, but I was not able to work it out successfully:'))
 ```
 source /opt/venv/bin/activate # source virtual environment
@@ -69,10 +77,14 @@ export PS1="\[\e[38;2;13;183;237m\][CONTAINER \u@\h \w]\$ \[\e[0m\]" # recolor t
 *Launch Package*
 
 The above commands do not launch the shimmer3 package. You can do this manually from within the container.
-Launch Parameters:
+
 ```
 ros2 launch shimmer3_pkg shimmer3.launch.py # launch file
 ```
+Launch Parameters:<br>
+`ppg_buffer_length`: PPG buffer length with which BPM is found. The smaller, the less filtering, and the more noise.<br>
+`hrv_limit`: Maximum plausible change in heart rate between successive beats<br>
+`liveplot`: Toggles Matplot window.  Default on.
 
 *To stop and remove ALL containers*
 ```
