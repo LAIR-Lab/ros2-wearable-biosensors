@@ -5,14 +5,20 @@
 - Better source the Docker environment, incorporating commands into the DockerFile instead of copy-pasting into each new terminal.
 - Get `matplooter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
 - Appears to be a non fatal error `[shimmer3_node-1] Can't open RFCOMM control socket: Address family not supported by protocol`
+- `matplotter_node.py` reuses the same global variable as `bpm_detector` but is hardcoded, which is not clean, and prevents efficiently changing `live_bpm` publishing rate
+- `live_bpm` takes between 10 and 30s seconds from startup to publish non-zero data.
 
 # Troubleshooting
 - The device node `/dev/rfcomm0` will not be detected if `shimmer3_node` is running. Attempting to run `start.py` in another terminal will end the ongoing process, but not stop the node from spinning.
-- If `start.py` does not connect to Bluetooth device, try opening a second terminal and running
+- If `start.py` does not connect to Bluetooth device, try opening a second terminal and running.
     ```
     bluetoothctl
     scan on
-    ``` 
+    ```
+- If launching returns this error, `[ERROR] [1759514528.907245939] [shimmer3_node]: Could not open serial port [Errno 6] could not open port /dev/rfcomm0: [Errno 6] No such device or address: '/dev/rfcomm0'`, double check
+    ```
+    ls -l /dev/rfcomm0*
+    ```
 
 # Basic Code Structure
 `start.py`
