@@ -7,7 +7,7 @@ import time
 import serial
 
 BT_ADDR = "74:D5:C6:52:65:C2"
-DEVICE = "/dev/rfcomm0"
+DEVICE_NODE = "/dev/rfcomm0"
 CHANNEL = 6
 CONTAINER_NAME = "shimmer3" # give this container a name
 WAIT_SEC = 2
@@ -23,19 +23,28 @@ def is_dev_connected():
 
 def bind_connect_shimmer3():
     while True:
+        device_node_exists= os.path.exists('/dev/rfcomm0')
+
         try:
-            run("sudo rfcomm release 0") # release rfcomm0
-            run(f"sudo rfcomm bind 0 {BT_ADDR} {str(CHANNEL)}")
-            run(f"sudo chmod a+rw {DEVICE}") # (ch)ange (mod)e and let (a)ll users (r)ead or (w)rite to device  
-            ser = serial.Serial(DEVICE, 115200, timeout=1) # open port
-            ser.write(b'\x07') # trigger data stream
-            time.sleep(WAIT_SEC)
-            data = ser.read(100) # read arbitrary 100B of data
-            if data: break # if the data exists, success!
+            if not device_node_exists:
+                print(f"Device node {DEVICE_NODE} does not exist yet. Binding now...") 
+                run("sudo rfcomm release 0") # release rfcomm0
+                run(f"sudo rfcomm bind 0 {BT_ADDR} {str(CHANNEL)}")
+                run(f"sudo chmod a+rw {DEVICE_NODE}") # (ch)ange (mod)e and let (a)ll users (r)ead or (w)rite to device_NODE  
+                ser = serial.Serial(DEVICE_NODE, 115200, timeout=1) # open port
+                ser.write(b'\x07') # trigger data stream
+                time.sleep(WAIT_SEC)
+                data = ser.read(100) # read arbitrary 100B of data
+                if data: 
+                    print(f"Bluetooth: {BT_ADDR} connection outside of '{CONTAINER_NAME}' container successful!")
+                    break # if the data exists, success!
+            else: 
+                print(f"Device node {DEVICE_NODE} already exists. Moving onto Docker stage...")
+                break 
         except subprocess.CalledProcessError as e:  
             print(f"Command failed: {e}")
         # print("Connection unsuccessful, trying again") # !! Right now except will end the process instead of allowing retrying
-    print(f"Bluetooth: {BT_ADDR} connection outside of '{CONTAINER_NAME}' container successful!")
+
 
 def build_run():
     syst("xhost +local:") # allows docker to connect to display (X11) for generating visualization windows
@@ -54,7 +63,7 @@ def build_run():
                 --name {CONTAINER_NAME} \
                 --device /dev/rfkill \
                 --device /dev/ttyUSB0 \
-                --device {DEVICE} \
+                --device {DEVICE_NODE} \
                 -v $(pwd)/src:/shimmer3/src \
                 -v /tmp/.X11-unix:/tmp/.X11-unix \
                 -e DISPLAY=$DISPLAY \

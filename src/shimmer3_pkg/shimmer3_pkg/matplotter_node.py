@@ -22,10 +22,10 @@ class MatPlotterNode(Node):
         # None, just the plot
 
         # Attributes
-        self.sample_rate = 50.032613 # in Hz
+        self.sample_rate = 10 # in Hz. From bpm_detector.py BPM_PUB_RATE
         self.upperlimit = 180.0  # upper limit for heart rate in BPM
         self.maxlen = 500
-        self.buffer = deque(maxlen=self.maxlen)
+        self.buffer = deque(maxlen=200000) # > one hour
         self.window_size = 10.0 # in s
 
         # Setup
@@ -46,14 +46,18 @@ class MatPlotterNode(Node):
     def update_plot(self):
         ydata = list(self.buffer)
         xdata = np.arange(len(ydata)) / self.sample_rate # time calculated form samples and frequency
-        current_time = xdata[-1]
         self.line.set_xdata(xdata)
         self.line.set_ydata(ydata)
-        self.ax.relim() # autoscale calculations
-        self.ax.autoscale_view(scalex=True, scaley=False)
+        current_time = xdata[-1] if len(xdata) > 0 else 0
+        window_start = max(0, current_time - self.window_size)
+        self.ax.set_xlim(window_start, current_time)
+        self.ax.set_ylim(0, self.upperlimit)
+
+        # self.ax.relim() # autoscale calculations
+        # self.ax.autoscale_view(scalex=True, scaley=False)
         # self.ax.set_xlim(current_time - self.window_size, current_time) # Something like this could save computation time compared to relim and autoscaling
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
+        self.ax.figure.canvas.draw()
+        self.ax.figure.canvas.flush_events()
         plt.pause(0.001)
 
 def main(args=None):

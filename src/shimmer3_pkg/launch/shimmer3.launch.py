@@ -15,7 +15,7 @@ def generate_launch_description():
     # Launch Parameters
     ppg_buffer_length_arg = DeclareLaunchArgument(
         'ppg_buffer_length',
-        default_value = "150",
+        default_value = "500",
         description = 'PPG buffer length with which BPM is found. The smaller, the less filtering, and the more noise.')
     ppg_buffer_length = LaunchConfiguration('ppg_buffer_length')
 
@@ -27,7 +27,7 @@ def generate_launch_description():
 
     liveplot_arg = DeclareLaunchArgument(
         'liveplot',
-        default_value = 'false',
+        default_value = 'true',
         description = 'Show live BPM matplot')
     liveplot = LaunchConfiguration('liveplot')
 
@@ -74,8 +74,8 @@ def generate_launch_description():
         liveplot_arg,
 
         # Log Messages
-        LogInfo(msg=['Launching with ppg_buffer_length:', ppg_buffer_length]),
-        LogInfo(msg=['Launching with hrv_limit:', hrv_limit]),
+        LogInfo(msg=['Launching with ppg_buffer_length: ', ppg_buffer_length]),
+        LogInfo(msg=['Launching with hrv_limit: ', hrv_limit]),
         LogInfo(msg=['Matplot live heartrate plotter (liveplot): ', liveplot]),
 
         # Nodes

@@ -6,15 +6,15 @@ import heartpy as hp
 import numpy as np
 
 # Attributes
-SAMPLERATE = 50.032613 # This is determined from this Shimmer3 beforehand using hp.get_samplerate_mstimer(mstimer_data)
-ppg_buffer_length = 150 # make alaunch parameter. shorter the better to avoid excessive filtering.
+SAMPLERATE = 50.032613 # Hz. This is determined from this Shimmer3 beforehand using hp.get_samplerate_mstimer(mstimer_data)
+BPM_PUB_RATE = 10 # Hz. Doesn't need to be the full SAMPLERATE as BPM is only computed every peak.
 UPPERLIMIT = 180  # Maximum plausible heart rate
 
 class BPMDetectorNode(Node):
     def __init__(self):
         super().__init__('bpm_detector_node')
         # Parameters
-        self.declare_parameter('ppg_buffer_length', 10)
+        self.declare_parameter('ppg_buffer_length', 500)
         self.declare_parameter('hrv_limit', 1)
 
         self.ppg_buffer_length = int(self.get_parameter('ppg_buffer_length').value)
@@ -43,27 +43,37 @@ class BPMDetectorNode(Node):
         self.ppg_buffer = collections.deque(maxlen=500) # rolling buffer, deque is an optimized list with O(1) appending and popping
         self.bpm_buffer = collections.deque(maxlen=50) 
 
+        # Timers
+        timer_period = 1.0 / BPM_PUB_RATE
+        self.timer = self.create_timer(timer_period, self.publish_bpm)
+
     def ppg_callback(self, msg):
         self.ppg_buffer.append(msg.data)
-        if len(self.ppg_buffer) >= self.ppg_buffer_length: self.compute_and_publish_bpm() # wait until enough samples are collected
+        if len(self.ppg_buffer) >= self.ppg_buffer_length: self.compute_bpm() # wait until enough samples are collected
 
-    def compute_and_publish_bpm(self):
+    def compute_bpm(self):
         ppg_data = np.array(self.ppg_buffer, dtype=float)
         try:
             wd, m = hp.process(ppg_data, SAMPLERATE) # wd: working data, m: measures
             wd['peaklist_t'] = [idx / SAMPLERATE for idx in wd['peaklist']]
             bpm_list = self.get_hr(wd['peaklist_t'])
             bpm = bpm_list[-1] if bpm_list else 0.0
-            self.publisher_single.publish(Float32(data=float(bpm)))
             self.bpm_buffer.append(bpm)
-            if len(self.bpm_buffer) >= 10:
-                msg = Float32MultiArray()
-                msg.data = list(self.bpm_buffer)
-                self.publisher_buffer.publish(msg)
-                # self.get_logger().info(f"Published BPM buffer: {len(msg.data)} samples")
-            # self.get_logger().info(f'Published BPM: {bpm:.1f}')
+            return bpm
+
         except Exception as e:
             self.get_logger().warning(f'BPM computation failed: {e}')
+
+    def publish_bpm(self):
+        msg = Float32()
+        msg.data = self.last_bpm
+        self.publisher_single.publish(msg)
+
+        if len(self.bpm_buffer) >= 10:
+            buffer_msg = Float32MultiArray()
+            buffer_msg.data = list(self.bpm_buffer)
+            self.publisher_buffer.publish(buffer_msg)
+            # self.get_logger().info(f"Published BPM buffer: {len(msg.data)} samples")
 
     def get_hr(self, peaklist):
         rr_dist = [peaklist[idx] - peaklist[idx-1] for idx in range(1, len(peaklist))] # in samples
@@ -71,33 +81,17 @@ class BPMDetectorNode(Node):
         bpm_list = []
         for rd in rr_time:
             candidate = (1.0 / rd)
-            bpm_diff =candidate - self.last_bpm
+            bpm_diff = candidate - self.last_bpm
             if self.last_bpm != 0 and abs(bpm_diff) > self.hrv_limit:
-                self.get_logger().info(f"bpm_diff: {bpm_diff}")
+                # self.get_logger().info(f"bpm_diff: {bpm_diff}")
                 candidate = self.last_bpm + self.sign(bpm_diff) * self.hrv_limit
             if candidate > UPPERLIMIT: 
-                self.get_logger().info(f"bpm value of '{candidate}' exceeds {UPPERLIMIT}")
+                # self.get_logger().info(f"bpm value of '{candidate}' exceeds {UPPERLIMIT}")
                 candidate = self.last_bpm
             
             self.last_bpm = candidate
             bpm_list.append(candidate)
         return bpm_list
-            
-            # if len(bpm) > 1: # no-difference check for first element
-                # bpm_diff = bpm[-1] - bpm[-2] 
-                # if abs(bpm_diff) > self.hrv_limit: # limit exceeded (indicates unrealistic spike)
-                    # self.get_logger().info(f"bpm_diff: {bpm_diff}")
-                    # bpm.pop()
-                    # bpm.append(bpm[-1]) # limit the change to the limit value
-            # if bpm[-1] > UPPERLIMIT:
-                # bpm.pop()
-                # if len(bpm) == 0:
-                    # self.get_logger().info(f"bpm is empty, appending 0.0")
-                    # bpm.append(0.0)
-                # else: 
-                    # self.get_logger().info(f"bpm value exceeds {UPPERLIMIT}")
-                    # bpm.append(bpm[-1]) # ignore the change and repeat the last value
-        # return bpm
 
     def sign(self, x):
         x = float(x)
