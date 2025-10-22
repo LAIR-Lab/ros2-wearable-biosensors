@@ -1,6 +1,6 @@
-# ROS2 Shimmer3 PPG HR 
+# ROS2 Shimmer3 PPG HR #
 
-# Future Improvements
+## Future Improvements ##
 - Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
 - Better source the Docker environment, incorporating commands into the DockerFile instead of copy-pasting into each new terminal.
 - Get `matplooter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
@@ -8,7 +8,7 @@
 - `matplotter_node.py` reuses the same global variable as `bpm_detector` but is hardcoded, which is not clean, and prevents efficiently changing `live_bpm` publishing rate
 - `live_bpm` takes between 10 and 30s seconds from startup to publish non-zero data.
 
-# Troubleshooting
+## Troubleshooting ##
 - The device node `/dev/rfcomm0` will not be detected if `shimmer3_node` is running. Attempting to run `start.py` in another terminal will end the ongoing process, but not stop the node from spinning.
 - If `start.py` does not connect to Bluetooth device, try opening a second terminal and running.
     ```
@@ -19,8 +19,15 @@
     ```
     ls -l /dev/rfcomm0*
     ```
+- The following failures do not affect functionality, and you can ignore them:
+    ```
+    [shimmer3_node-1] Can't open RFCOMM control socket: Address family not supported by protocol
+    [matplotter_node-3] glx: failed to create dri3 screen
+    [matplotter_node-3] failed to load driver: nouveau
+    ```
 
-# Basic Code Structure
+    
+## Basic Code Structure ##
 `start.py`
 - Tests Bluetooth connection
 - Checks for existing shimmer3 Docker container and starts existing or builds and runs new one. You are now inside the container.
@@ -40,20 +47,20 @@
       - Subscribes to `bpm_detector_node`'s `bpm_buffer` and outputs a window
       - Can be toggled via launch parameter, on by default. 
 
-# Requirements
+## Requirements ##
 - Bluetooth capability (dongle?)
 - Install python libraries:
   ```bash
   $ pip3 install open-e4-client pexpect websocket-client
   ```
 
-# Installation
+## Installation ##
 ```bash
 cd 
 git clone --branch main https://github.com/SMARTlab-Purdue/ros2-foxy-wearable-biosensors.git shimmer3
 ```
 
-# Usage
+## Usage ##
 
 The first time connecting Shimmer3 device to your computer, you will need to enter the device's pairing code, which is, according to the Shimmer User Manual, by default, `1234`. <br>
 This will cause the device to temporarily connect to your computer via Bluetooth then disconnect, signalling it is ready to run.
@@ -103,4 +110,25 @@ Launch Parameters:<br>
 deactivate # venv
 sudo docker stop $(sudo docker ps -q)
 sudo docker rm $(sudo docker ps -a -q)
+```
+
+*Expected Nodes and Topics*
+A functioning session should return the following:
+for `ros2 node list`, 
+```
+/bpm_detector_node
+/matplotter_node
+/shimmer3_node
+```
+for `ros2 topic list`,
+```
+/biosensors/shimmer3_gsr/gsr
+/biosensors/shimmer3_gsr/gsr_chunk
+/biosensors/shimmer3_gsr/ppg
+/biosensors/shimmer3_gsr/ppg_chunk
+/biosensors/shimmer3_gsr/ppg_filtered
+/bpm_buffer
+/live_bpm
+/parameter_events
+/rosout
 ```
