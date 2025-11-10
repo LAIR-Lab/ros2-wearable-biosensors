@@ -90,7 +90,7 @@ source /opt/ros/jazzy/setup.bash # source ROS2
 sudo chown -R ros:ros /shimmer3/install /shimmer3/build /shimmer3/log
 colcon build --merge-install && source install/setup.bash
 source /shimmer3/install/setup.bash # source workspace
-export PS1="\[\e[38;2;13;183;237m\][CONTAINER \u@\h \w]\$ \[\e[0m\]" # recolor the container prompt to Docker blue for convenience and ✨aeshetic✨
+export PS1="\[\e[38;2;13;183;237m\][CONTAINER \u@\h \w] (\$(basename \$VIRTUAL_ENV))\$ \[\e[0m\]" # recolor the container prompt to Docker blue for convenience and ✨aeshetic✨
 ```
 
 *Launch Package*
