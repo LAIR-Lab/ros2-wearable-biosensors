@@ -112,8 +112,8 @@ sudo docker stop $(sudo docker ps -q)
 sudo docker rm $(sudo docker ps -a -q)
 ```
 
-*Expected Nodes and Topics*
-A functioning session should return the following:
+*Expected Nodes and Topics*<br>
+A functioning session should return the following:<br>
 for `ros2 node list`, 
 ```
 /bpm_detector_node
