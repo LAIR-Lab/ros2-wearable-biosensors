@@ -3,7 +3,7 @@
 ## Future Improvements ##
 - Move on from obsolete BlueZ rfcomm in `bluez-obsolete-utils` to `bluetoothctl`
 - Better source the Docker environment, incorporating commands into the DockerFile instead of copy-pasting into each new terminal.
-- Get `matplooter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
+- Get `matplotter_node.py` up and running (currently incomplete and inactive). Launch parameter `liveplot` currently defaults to false and the window does not appear.
 - Appears to be a non fatal error `[shimmer3_node-1] Can't open RFCOMM control socket: Address family not supported by protocol`
 - `matplotter_node.py` reuses the same global variable as `bpm_detector` but is hardcoded, which is not clean, and prevents efficiently changing `live_bpm` publishing rate
 - `live_bpm` takes between 10 and 30s seconds from startup to publish non-zero data.
